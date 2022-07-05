@@ -7,3 +7,6 @@
 [submodule "eureka-server"]
 	path = eureka-server
 	url = git@github.com:slackwarecps/eureka-server.git
+[submodule "gateway"]
+	path = gateway
+	url = git@github.com:slackwarecps/gateway.git
