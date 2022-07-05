@@ -1,0 +1,3 @@
+[submodule "spring-ms-pagamentos"]
+	path = spring-ms-pagamentos
+	url = git@github.com:slackwarecps/spring-ms-pagamentos.git
