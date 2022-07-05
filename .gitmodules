@@ -4,3 +4,6 @@
 [submodule "spring-ms-pedidos"]
 	path = spring-ms-pedidos
 	url = git@github.com:slackwarecps/spring-ms-pedidos.git
+[submodule "eureka-server"]
+	path = eureka-server
+	url = git@github.com:slackwarecps/eureka-server.git
