@@ -1,0 +1,109 @@
+version: '3.7'
+
+networks:
+  rede1:
+    internal: true
+  proxy:
+
+
+services:
+
+  maquina2:
+    image: fabioalvaro/terminal-fabio:latest
+    container_name: terminal
+    networks:
+      - rede1
+
+  server-container:
+    build: ./eureka-server
+    container_name: server-container
+    environment:
+      PORT: 8011
+      CLIENT_SERVICE_URL: http://server-container:8011/eureka
+    expose:
+      - 8011
+    networks:
+      - rede1
+
+
+
+
+  mysqlv8:
+    image: mysql:8.0.29
+    container_name: mysqlv8
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: 'alurafood-pedidos'
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: '%'
+    volumes:
+      - ./mysql:/docker-entrypoint-initdb.d
+    expose:
+      - 3306
+    networks:
+      - rede1
+    depends_on:
+      - server-container
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    networks:
+      - rede1
+    ports:
+      - 8080:8080
+    depends_on:
+      - mysqlv8
+
+  pedido:
+    build: ./spring-ms-pedidos
+    container_name: pedido-container
+    environment:
+      DB_URL: mysqlv8
+      DB_NAME: alurafood-pedidos
+      DB_USERNAME: root
+      DB_PASS: root
+      CLIENT_SERVICE_URL: http://server-container:8011/eureka
+    networks:
+      - rede1
+    depends_on:
+      - mysqlv8
+      - server-container
+
+
+  meu-proxy:
+    image: nginx
+    container_name: meu-proxy
+    restart: unless-stopped
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf
+      - ./proxy/proxy.conf:/etc/nginx/conf.d/proxy.conf
+    ports:
+      - 80:80
+    networks:
+      - proxy
+      - rede1
+    depends_on:
+      - server-container
+      - adminer
+
+#  terminal:
+    #image: fabioalvaro/terminal-fabio:latest
+    #container_name: terminal-fabio
+    #networks:
+  #    - rede1
+
+
+
+  #gateway1:
+  #  build: ./gateway
+  #  environment:
+  #    SERVER_PORT: 8080
+  #    CLIENT_SERVICE_URL: server1:8011/eureka
+  #    APPLICATION_NAME: gateway
+  #  ports:
+  #    - "8080:8080"
+  #  depends_on:
+  #   - pedido
